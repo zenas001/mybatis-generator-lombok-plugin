@@ -4,7 +4,7 @@
 
     <groupId>com.softwareloop</groupId>
     <artifactId>mybatis-generator-lombok-plugin</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.0</version>
 
     <name>mybatis-generator-lombok-plugin</name>
     <description>A plugin for MyBatis Generator to use Lombok annotations instead of getters and setters</description>
@@ -23,7 +23,7 @@
         <connection>scm:git:git@github.com:softwareloop/mybatis-generator-lombok-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:softwareloop/mybatis-generator-lombok-plugin.git</developerConnection>
         <url>git@github.com:softwareloop/mybatis-generator-lombok-plugin.git</url>
-        <tag>HEAD</tag>
+        <tag>v1.0</tag>
     </scm>
 
     <developers>
@@ -42,10 +42,6 @@
         <contributor>
             <name>Kimmking</name>
             <url>https://github.com/kimmking</url>
-        </contributor>
-        <contributor>
-            <name>MaruyamaTomoki</name>
-            <url>https://github.com/tomoki1207</url>
         </contributor>
     </contributors>
 
@@ -72,21 +68,6 @@
     <!-- Build and release documentation:
     http://central.sonatype.org/pages/apache-maven.html
     http://maven.apache.org/maven-release/maven-release-plugin/usage.html
-    http://central.sonatype.org/pages/releasing-the-deployment.html
-
-    To make a release and stage to Maven Central Repo:
-    http://central.sonatype.org/pages/releasing-the-deployment.html
-    https://oss.sonatype.org/
-
-    mvn release:prepare -DdryRun=true
-    Check everything and, if needed: mvn release:clean
-    mvn release:prepare
-    mvn release:perform
-
-    This will:
-    - upgrade the project version, tag and commit
-    - build the project, sources and javadocs
-    - stage and release to the Central Repository in one go
     -->
 
     <build>
@@ -120,6 +101,20 @@
                     </execution>
                 </executions>
             </plugin>
+            <!--源码上传-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
@@ -133,11 +128,14 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
                 <configuration>
-                    <source>6</source>
-                    <target>6</target>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
                 </configuration>
             </plugin>
         </plugins>
