@@ -153,33 +153,48 @@ public class LombokPlugin extends PluginAdapter {
         super.setProperties(properties);
 
         //@Data is default annotation
-        annotations.add(Annotations.DATA);
-
+        //add new
+//        annotations.add(Annotations.SUPER_BUILDER);
+//        annotations.add(Annotations.ALL_ARGS_CONSTRUCTOR);
+//        annotations.add(Annotations.EQUALS_AND_HASH_CODE);
+//        annotations.add(Annotations.NO_ARGS_CONSTRUCTOR);
+//        annotations.add(Annotations.DATA);
         for (String annotationName : properties.stringPropertyNames()) {
             if (annotationName.contains(".")) {
                 // Not an annotation name
                 continue;
             }
             String value = properties.getProperty(annotationName);
-            if (!Boolean.parseBoolean(value)) {
-                // The annotation is disabled, skip it
-                continue;
-            }
             Annotations annotation = Annotations.getValueOf(annotationName);
             if (annotation == null) {
                 continue;
             }
-            String optionsPrefix = annotationName + ".";
-            for (String propertyName : properties.stringPropertyNames()) {
-                if (!propertyName.startsWith(optionsPrefix)) {
-                    // A property not related to this annotation
-                    continue;
+            String[] params = value.split(",");
+            for (String param : params) {
+                //annotation config options
+                if (param.contains("=")) {
+                    String[] kv = param.split("=");
+                    String v = kv[1];
+                    if (!Boolean.parseBoolean(v)) {
+                        // The annotation is disabled, skip it
+                        continue;
+                    }
+                    annotation.appendOptions(kv[0], v);
                 }
-                String propertyValue = properties.getProperty(propertyName);
-                annotation.appendOptions(propertyName, propertyValue);
-                annotations.add(annotation);
-                annotations.addAll(Annotations.getDependencies(annotation));
             }
+            annotations.add(annotation);
+            annotations.addAll(Annotations.getDependencies(annotation));
+//            String optionsPrefix = annotationName + ".";
+//            for (String propertyName : properties.stringPropertyNames()) {
+//                if (!propertyName.startsWith(optionsPrefix)) {
+//                    // A property not related to this annotation
+//                    continue;
+//                }
+//                String propertyValue = properties.getProperty(propertyName);
+//                annotation.appendOptions(propertyName, propertyValue);
+//                annotations.add(annotation);
+//                annotations.addAll(Annotations.getDependencies(annotation));
+//            }
         }
     }
 
@@ -195,8 +210,10 @@ public class LombokPlugin extends PluginAdapter {
         return true;
     }
 
-    private enum Annotations {
+    public enum Annotations {
+        EQUALS_AND_HASH_CODE("equalsAndHashCode", "@EqualsAndHashCode", "lombok.EqualsAndHashCode"),
         DATA("data", "@Data", "lombok.Data"),
+        SUPER_BUILDER("superBuilder", "@SuperBuilder", "lombok.experimental.SuperBuilder"),
         BUILDER("builder", "@Builder", "lombok.Builder"),
         ALL_ARGS_CONSTRUCTOR("allArgsConstructor", "@AllArgsConstructor", "lombok.AllArgsConstructor"),
         NO_ARGS_CONSTRUCTOR("noArgsConstructor", "@NoArgsConstructor", "lombok.NoArgsConstructor"),
@@ -209,6 +226,9 @@ public class LombokPlugin extends PluginAdapter {
         private final FullyQualifiedJavaType javaType;
         private final List<String> options;
 
+        public String getParamName() {
+            return paramName;
+        }
 
         Annotations(String paramName, String name, String className) {
             this.paramName = paramName;
@@ -244,7 +264,19 @@ public class LombokPlugin extends PluginAdapter {
         private void appendOptions(String key, String value) {
             String keyPart = key.substring(key.indexOf(".") + 1);
             String valuePart = value.contains(",") ? String.format("{%s}", value) : value;
-            this.options.add(String.format("%s=%s", keyPart, quote(valuePart)));
+            String newOptions = String.format("%s=%s", keyPart, quote(valuePart));
+            boolean isExist = false;
+            for (int i = 0; i < this.options.size(); i++) {
+                String oldOption = this.options.get(i);
+                if (oldOption.contains(keyPart)) {
+                    this.options.set(i, newOptions);
+                    isExist = true;
+                    break;
+                }
+            }
+            if (!isExist) {
+                this.options.add(newOptions);
+            }
         }
 
         private String asAnnotation() {
