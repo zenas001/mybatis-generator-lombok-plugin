@@ -264,7 +264,7 @@ public class LombokPlugin extends PluginAdapter {
         private void appendOptions(String key, String value) {
             String keyPart = key.substring(key.indexOf(".") + 1);
             String valuePart = value.contains(",") ? String.format("{%s}", value) : value;
-            String newOptions = String.format("%s=%s", keyPart, quote(valuePart));
+            String newOptions = String.format("%s = %s", keyPart, quote(valuePart));
             boolean isExist = false;
             for (int i = 0; i < this.options.size(); i++) {
                 String oldOption = this.options.get(i);
